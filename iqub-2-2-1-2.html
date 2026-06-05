@@ -1,0 +1,1156 @@
+<!DOCTYPE html>
+<html lang="am">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#1a472a">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="እቁብ">
+<link rel="manifest" id="manifest-placeholder">
+<title>እቁብ አስተዳዳሪ</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Ethiopic:wght@300;400;600;700;900&display=swap');
+  :root {
+    --green-dark:#1a472a;--green-mid:#2d6a4f;--green-bright:#52b788;
+    --gold:#f4a261;--gold-light:#ffd166;--red:#e63946;--gray:#6c757d;
+    --light-bg:#f0f4f0;--card-shadow:0 4px 20px rgba(0,0,0,0.12);
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{font-family:'Noto Sans Ethiopic',sans-serif;background:var(--light-bg);color:#1a1a2e;min-height:100vh;overflow-x:hidden;}
+
+  /* HEADER */
+  .app-header{background:linear-gradient(135deg,var(--green-dark),var(--green-mid));color:white;position:sticky;top:0;z-index:100;box-shadow:0 2px 12px rgba(0,0,0,0.3);}
+  .header-top{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;}
+  .app-logo{font-size:20px;font-weight:900;}
+  .app-logo span{color:var(--gold);}
+  .header-right{display:flex;align-items:center;gap:10px;}
+  .header-stats{display:flex;gap:14px;font-size:11px;opacity:0.9;}
+  .hstat{text-align:center;}
+  .hstat-num{font-size:17px;font-weight:700;color:var(--gold-light);display:block;}
+  /* Install button */
+  #install-btn{display:none;background:var(--gold);color:var(--green-dark);border:none;border-radius:20px;padding:6px 14px;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer;align-items:center;gap:4px;}
+  #install-btn.visible{display:flex;}
+
+  /* Install Prompt Modal */
+  .install-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:2000;display:none;align-items:flex-end;justify-content:center;}
+  .install-modal-overlay.open{display:flex;}
+  .install-sheet{background:white;border-radius:28px 28px 0 0;padding:28px 22px 36px;width:100%;text-align:center;}
+  .install-icon{font-size:56px;display:block;margin-bottom:12px;}
+  .install-title{font-size:20px;font-weight:900;color:var(--green-dark);margin-bottom:6px;}
+  .install-desc{font-size:13px;color:#555;margin-bottom:22px;line-height:1.6;}
+  .install-features{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:22px;text-align:left;}
+  .install-feat{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--green-dark);background:#f0f9f4;padding:8px 10px;border-radius:10px;}
+  .btn-install-main{background:linear-gradient(135deg,var(--green-mid),var(--green-dark));color:white;width:100%;padding:15px;border-radius:14px;border:none;font-family:inherit;font-size:15px;font-weight:700;cursor:pointer;margin-bottom:10px;}
+  .btn-install-skip{background:transparent;border:none;font-family:inherit;font-size:13px;color:var(--gray);cursor:pointer;padding:6px;}
+
+  /* Admin Login */
+  .login-overlay{position:fixed;inset:0;background:linear-gradient(160deg,var(--green-dark),var(--green-mid));z-index:3000;display:flex;align-items:center;justify-content:center;flex-direction:column;padding:24px;}
+  .login-box{background:white;border-radius:24px;padding:28px 22px;width:100%;max-width:360px;}
+  .login-logo{font-size:42px;text-align:center;margin-bottom:6px;}
+  .login-title{font-size:20px;font-weight:900;color:var(--green-dark);text-align:center;margin-bottom:4px;}
+  .login-sub{font-size:12px;color:var(--gray);text-align:center;margin-bottom:22px;}
+  .login-error{background:#fde8e8;color:#c0392b;font-size:12px;padding:8px 12px;border-radius:8px;margin-bottom:12px;display:none;text-align:center;}
+  .btn-login{background:linear-gradient(135deg,var(--green-mid),var(--green-dark));color:white;width:100%;padding:14px;border-radius:12px;border:none;font-family:inherit;font-size:15px;font-weight:700;cursor:pointer;margin-top:8px;}
+
+  /* NAV */
+  .bottom-nav{position:fixed;bottom:0;left:0;right:0;background:var(--green-dark);display:flex;z-index:200;box-shadow:0 -2px 12px rgba(0,0,0,0.25);}
+  .nav-btn{flex:1;display:flex;flex-direction:column;align-items:center;padding:9px 4px 7px;color:rgba(255,255,255,0.5);border:none;background:none;cursor:pointer;font-family:inherit;font-size:9px;gap:3px;transition:color 0.2s;}
+  .nav-btn.active{color:var(--gold);}
+  .nav-btn svg{width:20px;height:20px;}
+
+  /* PAGES */
+  .page{display:none;padding:14px 14px 80px;}
+  .page.active{display:block;}
+
+  /* CARDS */
+  .card{background:white;border-radius:16px;padding:16px;margin-bottom:12px;box-shadow:var(--card-shadow);}
+  .card-title{font-size:14px;font-weight:700;color:var(--green-dark);margin-bottom:12px;display:flex;align-items:center;gap:7px;}
+
+  /* FORMS */
+  .form-group{margin-bottom:12px;}
+  label{display:block;font-size:12px;font-weight:600;margin-bottom:5px;color:var(--green-dark);}
+  input,select,textarea{width:100%;padding:10px 13px;border:2px solid #e0e0e0;border-radius:10px;font-family:inherit;font-size:14px;background:#fafafa;transition:border-color 0.2s;outline:none;}
+  input:focus,select:focus{border-color:var(--green-bright);background:white;}
+
+  /* BUTTONS */
+  .btn{padding:11px 18px;border-radius:10px;border:none;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;transition:all 0.2s;display:inline-flex;align-items:center;gap:5px;}
+  .btn-primary{background:linear-gradient(135deg,var(--green-mid),var(--green-dark));color:white;width:100%;justify-content:center;padding:13px;font-size:14px;}
+  .btn-primary:active{transform:scale(0.97);}
+  .btn-gold{background:linear-gradient(135deg,var(--gold),#e76f51);color:white;}
+  .btn-danger{background:var(--red);color:white;}
+  .btn-warn{background:#ff9800;color:white;}
+  .btn-sm{padding:6px 12px;font-size:11px;border-radius:8px;}
+  .btn-outline{background:transparent;border:2px solid var(--green-mid);color:var(--green-dark);}
+
+  /* MEMBER */
+  .member-item{display:flex;align-items:center;padding:10px 0;border-bottom:1px solid #f0f0f0;gap:10px;}
+  .member-item:last-child{border-bottom:none;}
+  .avatar{width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,var(--green-mid),var(--green-bright));display:flex;align-items:center;justify-content:center;color:white;font-weight:700;font-size:15px;flex-shrink:0;}
+  .member-info{flex:1;min-width:0;}
+  .member-name{font-weight:700;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .member-phone{font-size:11px;color:var(--gray);}
+  .member-status{font-size:10px;padding:3px 7px;border-radius:20px;font-weight:600;white-space:nowrap;}
+  .status-paid{background:#d4edda;color:#155724;}
+  .status-unpaid{background:#f8d7da;color:#721c24;}
+  .action-btns{display:flex;gap:4px;flex-shrink:0;}
+
+  /* STATS */
+  .stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;}
+  .stat-card{background:white;border-radius:14px;padding:14px;box-shadow:var(--card-shadow);text-align:center;}
+  .stat-num{font-size:22px;font-weight:900;color:var(--green-dark);}
+  .stat-label{font-size:10px;color:var(--gray);margin-top:3px;}
+
+  /* PAYMENT TABLE */
+  .payment-table{width:100%;border-collapse:collapse;font-size:12px;}
+  .payment-table th{background:var(--green-dark);color:white;padding:8px 9px;text-align:left;}
+  .payment-table td{padding:8px 9px;border-bottom:1px solid #f0f0f0;}
+  .payment-table tr:last-child td{border-bottom:none;}
+  .payment-table tr:nth-child(even) td{background:#f9f9f9;}
+
+  /* LOTTERY */
+  .lottery-wheel{background:linear-gradient(135deg,var(--green-dark),var(--green-mid));border-radius:20px;padding:22px;text-align:center;margin-bottom:12px;color:white;position:relative;overflow:hidden;}
+  .lottery-wheel::before{content:'🌀';font-size:80px;position:absolute;top:-10px;right:-10px;opacity:0.15;}
+  .lottery-round-num{font-size:46px;font-weight:900;color:var(--gold);display:block;}
+  .winner-badge{display:inline-flex;align-items:center;gap:8px;background:var(--gold);color:var(--green-dark);padding:9px 18px;border-radius:30px;font-weight:700;font-size:15px;margin-top:10px;}
+
+  /* PROGRESS */
+  .progress-bar-wrap{margin-bottom:9px;}
+  .progress-label{display:flex;justify-content:space-between;font-size:11px;margin-bottom:3px;}
+  .progress-bar{height:9px;background:#e0e0e0;border-radius:5px;overflow:hidden;}
+  .progress-fill{height:100%;background:linear-gradient(90deg,var(--green-mid),var(--green-bright));border-radius:5px;transition:width 0.5s;}
+
+  /* MODAL */
+  .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:500;display:none;align-items:flex-end;justify-content:center;}
+  .modal-overlay.open{display:flex;}
+  .modal{background:white;border-radius:24px 24px 0 0;padding:22px 18px;width:100%;max-height:92vh;overflow-y:auto;}
+  .modal-title{font-size:16px;font-weight:700;color:var(--green-dark);margin-bottom:16px;}
+
+  /* TOAST */
+  .toast{position:fixed;top:75px;left:50%;transform:translateX(-50%) translateY(-20px);background:var(--green-dark);color:white;padding:11px 22px;border-radius:30px;font-size:13px;font-weight:600;opacity:0;transition:all 0.3s;z-index:1000;white-space:nowrap;pointer-events:none;}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+  /* UNDO BANNER */
+  .undo-banner{position:fixed;bottom:70px;left:10px;right:10px;background:#333;color:white;border-radius:12px;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;z-index:300;font-size:13px;transform:translateY(100px);transition:transform 0.3s;box-shadow:0 4px 16px rgba(0,0,0,0.3);}
+  .undo-banner.show{transform:translateY(0);}
+  .undo-btn{background:var(--gold);color:var(--green-dark);border:none;border-radius:8px;padding:6px 14px;font-family:inherit;font-weight:700;font-size:12px;cursor:pointer;}
+
+  /* HISTORY PAGE */
+  .history-item{display:flex;align-items:center;padding:10px 0;border-bottom:1px solid #f0f0f0;gap:10px;}
+  .history-item:last-child{border-bottom:none;}
+  .history-tag{font-size:10px;padding:2px 8px;border-radius:20px;font-weight:600;background:#f8d7da;color:#721c24;}
+
+  .empty-state{text-align:center;padding:36px 20px;color:var(--gray);}
+  .empty-state .emoji{font-size:44px;display:block;margin-bottom:10px;}
+  .search-box{position:relative;margin-bottom:12px;}
+  .search-box input{padding-left:36px;}
+  .search-icon{position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--gray);font-size:15px;}
+  .chip{display:inline-block;background:#e8f5e9;color:var(--green-dark);border-radius:20px;padding:3px 10px;font-size:10px;font-weight:600;}
+  .section-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;}
+  .section-title{font-size:15px;font-weight:700;color:var(--green-dark);}
+  .telegram-badge{display:inline-flex;align-items:center;gap:6px;background:#229ED9;color:white;padding:5px 12px;border-radius:20px;font-size:11px;font-weight:600;margin-bottom:12px;}
+  .two-col{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+</style>
+</head>
+<body>
+
+<!-- ADMIN LOGIN -->
+<div class="login-overlay" id="login-overlay">
+  <div class="login-box">
+    <div class="login-logo">🔐</div>
+    <div class="login-title" id="login-title">እቁብ አስተዳዳሪ</div>
+    <div class="login-sub" id="login-sub">ለመግባት ስልክ ቁጥርዎን ያስገቡ</div>
+    <div class="login-error" id="login-error"></div>
+    <div id="login-form">
+      <div class="form-group">
+        <label>ስልክ ቁጥር</label>
+        <input type="tel" id="login-phone" placeholder="09XXXXXXXX" style="font-size:16px;" onkeydown="if(event.key==='Enter')doLogin()">
+      </div>
+      <button class="btn-login" onclick="doLogin()">🔓 ግባ</button>
+      <button style="width:100%;margin-top:10px;background:transparent;border:none;font-family:inherit;font-size:12px;color:var(--gray);cursor:pointer;" onclick="showRegisterForm()">+ አዲስ አስተዳዳሪ ምዝገባ</button>
+    </div>
+    <div id="register-form" style="display:none;">
+      <div class="form-group">
+        <label>ሙሉ ስም</label>
+        <input type="text" id="reg-name" placeholder="አበበ ቢቀላ" style="font-size:16px;">
+      </div>
+      <div class="form-group">
+        <label>ስልክ ቁጥር</label>
+        <input type="tel" id="reg-phone" placeholder="09XXXXXXXX" style="font-size:16px;">
+      </div>
+      <div class="form-group">
+        <label>የምስጢር ቁጥር (PIN)</label>
+        <input type="password" id="reg-pin" placeholder="4 ቁጥር" maxlength="4" style="font-size:16px;" onkeydown="if(event.key==='Enter')doRegister()">
+      </div>
+      <button class="btn-login" onclick="doRegister()">✅ ምዝገባ</button>
+      <button style="width:100%;margin-top:10px;background:transparent;border:none;font-family:inherit;font-size:12px;color:var(--gray);cursor:pointer;" onclick="showLoginForm()">← ወደ ግባ ተመለስ</button>
+    </div>
+  </div>
+</div>
+
+<!-- INSTALL PROMPT -->
+<div class="install-modal-overlay" id="install-modal">
+  <div class="install-sheet">
+    <span class="install-icon">📲</span>
+    <div class="install-title">አፑን ጫን!</div>
+    <div class="install-desc">እቁብ አስተዳዳሪን ወደ ስልክዎ ጨምሮ ያስቀምጡ።<br>ያለ ኢንተርኔትም ይሰራል!</div>
+    <div class="install-features">
+      <div class="install-feat">⚡ ፈጣን ክፈት</div>
+      <div class="install-feat">📶 ያለ ኔት ይሰራ</div>
+      <div class="install-feat">🔔 ማሳወቂያ</div>
+      <div class="install-feat">💾 ዳታ ይቆይ</div>
+    </div>
+    <button class="btn-install-main" onclick="doInstall()">⬇ አሁን ጫን</button>
+    <button class="btn-install-skip" onclick="skipInstall()">አሁን አይደለም</button>
+  </div>
+</div>
+
+<!-- HEADER -->
+<header class="app-header">
+  <div class="header-top">
+    <div class="app-logo">እቁብ <span>አስተዳዳሪ</span></div>
+    <div class="header-right">
+      <button id="install-btn" onclick="installApp()">⬇ Install</button>
+      <div class="header-stats">
+        <div class="hstat"><span class="hstat-num" id="h-members">0</span>አባላት</div>
+        <div class="hstat"><span class="hstat-num" id="h-round">1</span>ዙር</div>
+        <div class="hstat"><span class="hstat-num" id="h-collected">0</span>ክፍያ</div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- PAGES -->
+<!-- 1. ዳሽቦርድ -->
+<div class="page active" id="page-dashboard">
+  <div class="stats-grid">
+    <div class="stat-card"><div class="stat-num" id="stat-members">0</div><div class="stat-label">ጠቅላላ አባላት</div></div>
+    <div class="stat-card"><div class="stat-num" id="stat-round">1</div><div class="stat-label">አሁን ያለ ዙር</div></div>
+    <div class="stat-card"><div class="stat-num" id="stat-total-collected">0 ብር</div><div class="stat-label">የተሰበሰበ ክፍያ</div></div>
+    <div class="stat-card"><div class="stat-num" id="stat-pending">0</div><div class="stat-label">ያልከፈሉ</div></div>
+  </div>
+  <div class="card">
+    <div class="card-title">🏆 የዙር ሁኔታ</div>
+    <div class="progress-bar-wrap">
+      <div class="progress-label"><span id="progress-paid-label">0 ከፍለዋል</span><span id="progress-pct">0%</span></div>
+      <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+    </div>
+    <p style="font-size:12px;color:#555;margin-top:7px;" id="round-winner-text">— ዙር ደራሽ: ገና አልወጣም —</p>
+  </div>
+  <div class="card">
+    <div class="card-title">⚡ ፈጣን እርምጃዎች</div>
+    <div class="two-col">
+      <button class="btn btn-primary" style="font-size:12px;padding:11px;" onclick="openPage('page-members');openModal('modal-add-member')">+ አባል</button>
+      <button class="btn btn-gold btn-sm" onclick="openPage('page-payments')" style="width:100%;justify-content:center;">💰 ክፍያ</button>
+      <button class="btn btn-outline btn-sm" onclick="openPage('page-lottery')" style="width:100%;justify-content:center;">🎲 ዙር</button>
+      <button class="btn btn-outline btn-sm" onclick="openPage('page-reports')" style="width:100%;justify-content:center;">📊 ሪፖርት</button>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">📋 የቅርብ ጊዜ ክፍያዎች</div>
+    <div id="recent-payments-list"><div class="empty-state"><span class="emoji">💸</span>ክፍያ አልተመዘገበም</div></div>
+  </div>
+</div>
+
+<!-- 2. አባላት -->
+<div class="page" id="page-members">
+  <div class="section-header">
+    <span class="section-title">አባላት</span>
+    <button class="btn btn-primary btn-sm" onclick="openModal('modal-add-member')">+ አዲስ</button>
+  </div>
+  <div class="search-box">
+    <span class="search-icon">🔍</span>
+    <input type="text" placeholder="አባልን ፈልግ..." id="member-search" oninput="renderMembers()">
+  </div>
+  <div id="members-list"><div class="empty-state"><span class="emoji">👥</span>አባል አልተምዘገበም</div></div>
+</div>
+
+<!-- 3. ክፍያ -->
+<div class="page" id="page-payments">
+  <div class="section-header">
+    <span class="section-title">ክፍያ ምዝገባ</span>
+    <span class="chip" id="current-round-chip">ዙር 1</span>
+  </div>
+  <div class="card">
+    <div class="card-title">💰 ክፍያ መዝግብ</div>
+    <div class="form-group">
+      <label>አባሉ ምረጥ</label>
+      <select id="pay-member-select"><option value="">— አባሉ ምረጥ —</option></select>
+    </div>
+    <div class="form-group">
+      <label>ዙር</label>
+      <select id="pay-round-select"></select>
+    </div>
+    <div class="form-group">
+      <label>የብር መጠን (ብር)</label>
+      <input type="number" id="pay-amount" placeholder="500">
+    </div>
+    <div class="form-group">
+      <label>ቀን</label>
+      <input type="date" id="pay-date">
+    </div>
+    <div class="form-group">
+      <label>ማስታወሻ (አማራጭ)</label>
+      <input type="text" id="pay-note" placeholder="ምንም ልዩ ነገር?">
+    </div>
+    <button class="btn btn-primary" onclick="recordPayment()">✅ ክፍያ ምዝገብ</button>
+  </div>
+  <div class="card">
+    <div class="card-title">📝 የዙር ክፍያ ዝርዝር</div>
+    <div style="margin-bottom:10px;">
+      <select id="view-round-select" onchange="renderPaymentMatrix()" style="width:100%;"></select>
+    </div>
+    <div style="overflow-x:auto;">
+      <table class="payment-table" id="payment-matrix">
+        <thead><tr><th>አባሉ</th><th>ብር</th><th>ሁኔታ</th><th>ቀን</th><th></th></tr></thead>
+        <tbody id="payment-matrix-body"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- 4. ዙር -->
+<div class="page" id="page-lottery">
+  <div class="lottery-wheel">
+    <p style="font-size:12px;opacity:0.8;margin-bottom:4px;">አሁን ያለ ዙር</p>
+    <span class="lottery-round-num" id="current-round-display">1</span>
+    <p style="font-size:12px;opacity:0.8;margin-top:3px;" id="lottery-eligible-count">ደራሽ ሊሆኑ: 0</p>
+    <div id="current-winner-badge"></div>
+  </div>
+  <div class="card">
+    <div class="card-title">🎲 ደራሽ አወጣጥ</div>
+    <p style="font-size:12px;color:#555;margin-bottom:12px;">ሁሉም አባላት ከፍለው ሲጨርሱ እጣ ማወጣጥ ይቻላል።</p>
+    <div style="display:flex;gap:8px;">
+      <button class="btn btn-gold" style="flex:1;justify-content:center;" onclick="drawLottery()">🎰 እጣ አወጣ</button>
+      <button class="btn btn-outline btn-sm" onclick="newRound()">➡ አዲስ ዙር</button>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">🏅 የዙር ታሪክ</div>
+    <div id="round-history-list"><div class="empty-state"><span class="emoji">📜</span>ታሪክ ገና የለም</div></div>
+  </div>
+</div>
+
+<!-- 5. ሪፖርት -->
+<div class="page" id="page-reports">
+  <div class="card">
+    <div class="card-title">📊 አጠቃላይ ሪፖርት</div>
+    <div class="stats-grid" style="margin-bottom:0">
+      <div class="stat-card"><div class="stat-num" id="rep-total-rounds">0</div><div class="stat-label">ዙሮች</div></div>
+      <div class="stat-card"><div class="stat-num" id="rep-total-money">0</div><div class="stat-label">ጠቅላላ ብር</div></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">👤 የአባሉ ክፍያ ሁኔታ</div>
+    <div id="member-report-list"></div>
+  </div>
+  <div class="card">
+    <div class="card-title">📅 የዙር ሁኔታ</div>
+    <div id="round-report-list"></div>
+  </div>
+  <div class="card">
+    <div class="card-title">📤 ሪፖርት ላክ</div>
+    <button class="btn btn-primary" onclick="exportReport()">📋 ሪፖርት ቅዳ</button>
+  </div>
+</div>
+
+<!-- 6. ታሪክ (ሰርዝ ታሪክ) -->
+<div class="page" id="page-history">
+  <div class="section-header">
+    <span class="section-title">🗑️ ሰርዝ ታሪክ</span>
+    <button class="btn btn-danger btn-sm" onclick="clearHistory()">ሁሉን ሰርዝ</button>
+  </div>
+  <div class="card">
+    <p style="font-size:12px;color:#555;margin-bottom:12px;">በስህተት የሰረዙትን እዚህ ያገኛሉ። Undo ተጫን ወደነበረበት ይመለሳሉ።</p>
+    <div id="history-list"><div class="empty-state"><span class="emoji">🗑️</span>ታሪክ የለም</div></div>
+  </div>
+</div>
+
+<!-- 7. ቅንጅቶች -->
+<div class="page" id="page-settings">
+  <div class="card">
+    <div class="card-title">👮 አስተዳዳሪዎች</div>
+    <div id="admin-list" style="margin-bottom:12px;"></div>
+    <button class="btn btn-outline" style="width:100%;" onclick="showRegisterFromSettings()">+ አዲስ አስተዳዳሪ ምዝገብ</button>
+  </div>
+  <div class="card">
+    <div class="card-title">⚙️ የእቁብ ቅንጅቶች</div>
+    <div class="form-group"><label>የእቁብ ስም</label><input type="text" id="conf-name" placeholder="ጎረቤት እቁብ"></div>
+    <div class="form-group"><label>ወርሃዊ ክፍያ (ብር)</label><input type="number" id="conf-amount" placeholder="500"></div>
+    <div class="form-group"><label>ጠቅላላ ዙሮች</label><input type="number" id="conf-rounds" placeholder="10"></div>
+    <button class="btn btn-primary" onclick="saveConfig()">💾 አስቀምጥ</button>
+  </div>
+  <div class="card">
+    <div class="card-title">📱 Telegram ቅንጅት</div>
+    <div class="telegram-badge">🤖 Telegram Bot</div>
+    <div class="form-group"><label>Bot Token</label><input type="password" id="conf-bot-token" placeholder="1234567890:ABC..."></div>
+    <div class="form-group"><label>Chat ID</label><input type="text" id="conf-chat-id" placeholder="-100123456789"></div>
+    <button class="btn btn-primary" onclick="saveTelegram()">💾 አስቀምጥ</button>
+    <button class="btn btn-outline" style="width:100%;margin-top:8px;" onclick="testTelegram()">🧪 ሙከራ ላክ</button>
+  </div>
+  <div class="card">
+    <div class="card-title">🗄️ ዳታ ምትኬ</div>
+    <div style="display:grid;gap:8px;">
+      <button class="btn btn-primary" onclick="exportToTelegram()">📤 Telegram ላይ Backup ላክ</button>
+      <label style="background:#f0f9f4;border:2px dashed #52b788;border-radius:10px;padding:12px;text-align:center;cursor:pointer;font-size:13px;color:#2d6a4f;font-weight:600;">
+        📥 Backup File ከፍተህ አስገባ
+        <input type="file" accept=".json" onchange="importFromFile(event)" style="display:none;">
+      </label>
+      <button class="btn btn-danger btn-sm" onclick="clearAllData()">🗑️ ሁሉንም ሰርዝ</button>
+    </div>
+  </div>
+  <div class="card">
+    <button class="btn btn-danger" style="width:100%;" onclick="doLogout()">🚪 ውጣ (Logout)</button>
+  </div>
+</div>
+
+<!-- BOTTOM NAV -->
+<nav class="bottom-nav">
+  <button class="nav-btn active" onclick="openPage('page-dashboard')" id="nav-dashboard">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>ዳሽቦርድ
+  </button>
+  <button class="nav-btn" onclick="openPage('page-members')" id="nav-members">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>አባላት
+  </button>
+  <button class="nav-btn" onclick="openPage('page-payments')" id="nav-payments">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>ክፍያ
+  </button>
+  <button class="nav-btn" onclick="openPage('page-lottery')" id="nav-lottery">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>ዙር
+  </button>
+  <button class="nav-btn" onclick="openPage('page-history')" id="nav-history">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><polyline points="3 3 3 8 8 8"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>ታሪክ
+  </button>
+  <button class="nav-btn" onclick="openPage('page-settings')" id="nav-settings">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>ቅንጅት
+  </button>
+</nav>
+
+<!-- MODAL: አዲስ / Edit አባሉ -->
+<div class="modal-overlay" id="modal-add-member">
+  <div class="modal">
+    <div class="modal-title" id="modal-member-title">👤 አዲስ አባሉ ምዝገባ</div>
+    <input type="hidden" id="edit-member-id">
+    <div class="form-group"><label>ሙሉ ስም *</label><input type="text" id="new-member-name" placeholder="አበበ ቢቀላ"></div>
+    <div class="form-group"><label>ስልክ ቁጥር</label><input type="tel" id="new-member-phone" placeholder="09XXXXXXXX"></div>
+    <div class="form-group"><label>Telegram Chat ID (አማራጭ)</label><input type="text" id="new-member-tgid" placeholder="123456789"></div>
+    <div style="display:flex;gap:8px;margin-top:14px;">
+      <button class="btn btn-outline" style="flex:1;" onclick="closeModal('modal-add-member')">ሰርዝ</button>
+      <button class="btn btn-primary" style="flex:2;" onclick="saveMember()">✅ አስቀምጥ</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Edit Payment -->
+<div class="modal-overlay" id="modal-edit-payment">
+  <div class="modal">
+    <div class="modal-title">✏️ ክፍያ አርትዕ</div>
+    <input type="hidden" id="edit-payment-id">
+    <div class="form-group"><label>የብር መጠን</label><input type="number" id="edit-pay-amount" placeholder="500"></div>
+    <div class="form-group"><label>ቀን</label><input type="date" id="edit-pay-date"></div>
+    <div class="form-group"><label>ማስታወሻ</label><input type="text" id="edit-pay-note"></div>
+    <div style="display:flex;gap:8px;margin-top:14px;">
+      <button class="btn btn-outline" style="flex:1;" onclick="closeModal('modal-edit-payment')">ሰርዝ</button>
+      <button class="btn btn-primary" style="flex:2;" onclick="savePaymentEdit()">✅ አስቀምጥ</button>
+    </div>
+  </div>
+</div>
+
+<!-- UNDO BANNER -->
+<div class="undo-banner" id="undo-banner">
+  <span id="undo-msg">ተሰርዟል</span>
+  <button class="undo-btn" onclick="undoDelete()">↩ Undo</button>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ====== ADMIN AUTH ======
+function getAdmins() {
+  try { return JSON.parse(localStorage.getItem('iqub_admins') || '[]'); } catch(e) { return []; }
+}
+function saveAdmins(list) {
+  localStorage.setItem('iqub_admins', JSON.stringify(list));
+}
+
+function checkLogin() {
+  const loggedIn = localStorage.getItem('iqub_session');
+  if (loggedIn) {
+    document.getElementById('login-overlay').style.display = 'none';
+  } else {
+    showLoginOverlay();
+  }
+  renderAdminList();
+}
+
+function showLoginOverlay() {
+  document.getElementById('login-overlay').style.display = 'flex';
+}
+
+function showLoginForm() {
+  document.getElementById('login-form').style.display = 'block';
+  document.getElementById('register-form').style.display = 'none';
+  document.getElementById('login-title').textContent = 'እቁብ አስተዳዳሪ';
+  document.getElementById('login-sub').textContent = 'ለመግባት ስልክ ቁጥርዎን ያስገቡ';
+  document.getElementById('login-error').style.display = 'none';
+}
+
+function showRegisterForm() {
+  const admins = getAdmins();
+  document.getElementById('login-form').style.display = 'none';
+  document.getElementById('register-form').style.display = 'block';
+  document.getElementById('login-title').textContent = '+ አዲስ ምዝገባ';
+  document.getElementById('login-sub').textContent = 'አዲስ አስተዳዳሪ ምዝገብ';
+  document.getElementById('login-error').style.display = 'none';
+}
+
+function showRegisterFromSettings() {
+  showLoginOverlay();
+  showRegisterForm();
+  // after register, go back to settings
+  document._registerFromSettings = true;
+}
+
+function showLoginError(msg) {
+  const el = document.getElementById('login-error');
+  el.textContent = '❌ ' + msg;
+  el.style.display = 'block';
+}
+
+function doLogin() {
+  const phone = document.getElementById('login-phone').value.trim().replace(/\s/g,'');
+  const admins = getAdmins();
+  if (!admins.length) {
+    showLoginError('አስተዳዳሪ አልተመዘገበም። ምዝገባ ያድርጉ።');
+    return;
+  }
+  const found = admins.find(a => a.phone === phone);
+  if (!found) {
+    showLoginError('ስልክ ቁጥሩ ትክክል አይደለም');
+    return;
+  }
+  // has PIN?
+  if (found.pin) {
+    const pin = prompt('PIN ያስገቡ:');
+    if (!pin || pin !== found.pin) {
+      showLoginError('PIN ትክክል አይደለም');
+      return;
+    }
+  }
+  localStorage.setItem('iqub_session', phone);
+  document.getElementById('login-overlay').style.display = 'none';
+  showToast('✅ እንኳን ደህና መጡ ' + found.name + '!');
+  renderAdminList();
+}
+
+function doRegister() {
+  const name = document.getElementById('reg-name').value.trim();
+  const phone = document.getElementById('reg-phone').value.trim().replace(/\s/g,'');
+  const pin = document.getElementById('reg-pin').value.trim();
+  if (!name) { showLoginError('ስም ያስፈልጋል'); return; }
+  if (!phone) { showLoginError('ስልክ ቁጥር ያስፈልጋል'); return; }
+  if (pin && pin.length < 4) { showLoginError('PIN 4 ቁጥር መሆን አለበት'); return; }
+  const admins = getAdmins();
+  if (admins.find(a => a.phone === phone)) { showLoginError('ይህ ስልክ ቁጥር ቀድሞ ተመዝግቧል'); return; }
+  admins.push({ id: Date.now().toString(), name, phone, pin: pin || '' });
+  saveAdmins(admins);
+  // auto-login
+  localStorage.setItem('iqub_session', phone);
+  document.getElementById('login-overlay').style.display = 'none';
+  document._registerFromSettings = false;
+  showToast('✅ ' + name + ' ተመዘገቡ!');
+  renderAdminList();
+}
+
+function renderAdminList() {
+  const el = document.getElementById('admin-list');
+  if (!el) return;
+  const admins = getAdmins();
+  const current = localStorage.getItem('iqub_session');
+  if (!admins.length) {
+    el.innerHTML = '<p style="font-size:12px;color:#999;">አስተዳዳሪ አልተመዘገበም</p>';
+    return;
+  }
+  el.innerHTML = admins.map(a => `
+    <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #f0f0f0;">
+      <div class="avatar" style="width:34px;height:34px;font-size:13px;">${a.name[0]}</div>
+      <div style="flex:1;">
+        <div style="font-weight:700;font-size:13px;">${a.name} ${a.phone===current?'<span style="background:#d4edda;color:#155724;font-size:10px;padding:2px 7px;border-radius:20px;">አሁን</span>':''}</div>
+        <div style="font-size:11px;color:#777;">${a.phone}</div>
+      </div>
+      ${a.phone !== current ? `<button class="btn btn-danger btn-sm" onclick="removeAdmin('${a.id}')">🗑</button>` : ''}
+    </div>`).join('');
+}
+
+function removeAdmin(id) {
+  if (!confirm('ይህን አስተዳዳሪ ይሰርዙ?')) return;
+  let admins = getAdmins().filter(a => a.id !== id);
+  saveAdmins(admins);
+  renderAdminList();
+  showToast('ተሰርዟል');
+}
+
+function doLogout() {
+  if (!confirm('ከአፑ ይውጡ?')) return;
+  localStorage.removeItem('iqub_session');
+  location.reload();
+}
+
+// ====== PWA INSTALL ======
+let deferredPrompt = null;
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  document.getElementById('install-btn').classList.add('visible');
+  if (!localStorage.getItem('iqub_installed')) {
+    setTimeout(() => {
+      document.getElementById('install-modal').classList.add('open');
+    }, 1500);
+  }
+});
+
+async function doInstall() {
+  if (!deferredPrompt) { skipInstall(); return; }
+  document.getElementById('install-modal').classList.remove('open');
+  deferredPrompt.prompt();
+  const { outcome } = await deferredPrompt.userChoice;
+  if (outcome === 'accepted') {
+    showToast('✅ አፑ ተጭኗል!');
+    localStorage.setItem('iqub_installed', '1');
+  }
+  deferredPrompt = null;
+  document.getElementById('install-btn').classList.remove('visible');
+}
+
+function skipInstall() {
+  document.getElementById('install-modal').classList.remove('open');
+}
+
+async function installApp() {
+  if (deferredPrompt) {
+    document.getElementById('install-modal').classList.add('open');
+    return;
+  }
+  showInstallGuide();
+}
+
+function showInstallGuide() {
+  const existing = document.getElementById('install-guide-modal');
+  if (existing) { existing.style.display='flex'; return; }
+  const ua = navigator.userAgent;
+  const isIOS = /iPhone|iPad|iPod/i.test(ua);
+  const steps = isIOS
+    ? `<div class="ig-step">1️⃣ Safari ውስጥ ይህን ገጽ ክፈት</div>
+       <div class="ig-step">2️⃣ ታችኛው Share ቁልፍ <b>□↑</b> ጫን</div>
+       <div class="ig-step">3️⃣ <b>"Add to Home Screen"</b> ምረጥ</div>
+       <div class="ig-step">4️⃣ <b>Add</b> ጫን ✅</div>`
+    : `<div class="ig-step">1️⃣ Chrome ላይ ቀኝ ጥግ <b>⋮</b> ጫን</div>
+       <div class="ig-step">2️⃣ <b>"Add to Home screen"</b> ምረጥ</div>
+       <div class="ig-step">3️⃣ <b>Add</b> ጫን ✅</div>`;
+  const div = document.createElement('div');
+  div.id = 'install-guide-modal';
+  div.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:3000;display:flex;align-items:flex-end;justify-content:center;';
+  div.innerHTML = `
+    <div style="background:white;border-radius:28px 28px 0 0;padding:28px 22px 36px;width:100%;text-align:center;">
+      <div style="font-size:48px;margin-bottom:10px;">📲</div>
+      <div style="font-size:18px;font-weight:900;color:#1a472a;margin-bottom:6px;">አፕ እንዴት ይጫናል</div>
+      <div style="font-size:12px;color:#777;margin-bottom:20px;">ቀጥሎ ያሉትን ደረጃዎች ተከተሉ</div>
+      <style>.ig-step{background:#f0f9f4;border-radius:12px;padding:12px 16px;margin-bottom:8px;text-align:left;font-size:14px;color:#1a472a;}</style>
+      ${steps}
+      <button onclick="document.getElementById('install-guide-modal').style.display='none'" 
+        style="margin-top:16px;background:#1a472a;color:white;width:100%;padding:14px;border-radius:14px;border:none;font-family:inherit;font-size:15px;font-weight:700;cursor:pointer;">
+        ✓ ገባኝ
+      </button>
+    </div>`;
+  document.body.appendChild(div);
+}
+
+window.addEventListener('appinstalled', () => {
+  localStorage.setItem('iqub_installed', '1');
+  document.getElementById('install-btn').classList.remove('visible');
+  document.getElementById('install-modal').classList.remove('open');
+});
+
+// ====== INLINE MANIFEST ======
+function makeIconPNG(size) {
+  const canvas = document.createElement('canvas');
+  canvas.width = size; canvas.height = size;
+  const ctx = canvas.getContext('2d');
+  const r = size * 0.18;
+  ctx.beginPath();
+  ctx.moveTo(r, 0);
+  ctx.lineTo(size - r, 0);
+  ctx.quadraticCurveTo(size, 0, size, r);
+  ctx.lineTo(size, size - r);
+  ctx.quadraticCurveTo(size, size, size - r, size);
+  ctx.lineTo(r, size);
+  ctx.quadraticCurveTo(0, size, 0, size - r);
+  ctx.lineTo(0, r);
+  ctx.quadraticCurveTo(0, 0, r, 0);
+  ctx.closePath();
+  ctx.fillStyle = '#1a472a';
+  ctx.fill();
+  ctx.font = `${size * 0.52}px serif`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('💰', size / 2, size / 2 + size * 0.04);
+  return canvas.toDataURL('image/png');
+}
+
+(function(){
+  const icon192 = makeIconPNG(192);
+  const icon512 = makeIconPNG(512);
+  const manifest = {
+    name: 'እቁብ አስተዳዳሪ',
+    short_name: 'እቁብ',
+    description: 'የእቁብ አስተዳደር አፕ',
+    start_url: location.href,
+    scope: location.href,
+    display: 'standalone',
+    background_color: '#1a472a',
+    theme_color: '#1a472a',
+    orientation: 'portrait',
+    icons: [
+      { src: icon192, sizes: '192x192', type: 'image/png', purpose: 'any maskable' },
+      { src: icon512, sizes: '512x512', type: 'image/png', purpose: 'any maskable' }
+    ]
+  };
+  const blob = new Blob([JSON.stringify(manifest)], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  document.getElementById('manifest-placeholder').href = url;
+})();
+
+// ====== PWA INSTALL (no SW needed for manual install) ======
+
+// ====== STATE ======
+let db = {
+  config:{name:'እቁብ',amount:500,totalRounds:10},
+  telegram:{botToken:'',chatId:''},
+  members:[],
+  payments:[],   // {id,memberId,round,amount,date,note}
+  rounds:[],     // {round,winnerId,date}
+  deletedHistory:[], // {id,type,data,deletedAt,label}
+  currentRound:1
+};
+
+let undoTimer = null;
+let pendingDelete = null; // {type,data,index}
+
+function loadDB(){
+  const s=localStorage.getItem('iqub_db');
+  if(s){try{const p=JSON.parse(s);db={...db,...p};if(!db.deletedHistory)db.deletedHistory=[];}catch(e){}}
+}
+function saveDB(){localStorage.setItem('iqub_db',JSON.stringify(db));updateAll();}
+
+// ====== NAVIGATION ======
+function openPage(id){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  const map={'page-dashboard':'nav-dashboard','page-members':'nav-members','page-payments':'nav-payments','page-lottery':'nav-lottery','page-history':'nav-history','page-settings':'nav-settings'};
+  if(map[id])document.getElementById(map[id]).classList.add('active');
+  renderAll();window.scrollTo(0,0);
+}
+function openModal(id){document.getElementById(id).classList.add('open');}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+
+// ====== MEMBERS ======
+function openAddMember(){
+  document.getElementById('modal-member-title').textContent='👤 አዲስ አባሉ ምዝገባ';
+  document.getElementById('edit-member-id').value='';
+  document.getElementById('new-member-name').value='';
+  document.getElementById('new-member-phone').value='';
+  document.getElementById('new-member-tgid').value='';
+  openModal('modal-add-member');
+}
+function openEditMember(id){
+  const m=db.members.find(x=>x.id===id);
+  if(!m)return;
+  document.getElementById('modal-member-title').textContent='✏️ አባሉ አርትዕ';
+  document.getElementById('edit-member-id').value=id;
+  document.getElementById('new-member-name').value=m.name;
+  document.getElementById('new-member-phone').value=m.phone||'';
+  document.getElementById('new-member-tgid').value=m.tgId||'';
+  openModal('modal-add-member');
+}
+function saveMember(){
+  const name=document.getElementById('new-member-name').value.trim();
+  if(!name){showToast('ስም ያስፈልጋል!');return;}
+  const editId=document.getElementById('edit-member-id').value;
+  if(editId){
+    // Edit
+    const m=db.members.find(x=>x.id===editId);
+    if(m){m.name=name;m.phone=document.getElementById('new-member-phone').value.trim();m.tgId=document.getElementById('new-member-tgid').value.trim();}
+    saveDB();closeModal('modal-add-member');showToast('✅ አባሉ ተዘምኗል!');
+    sendTelegram('✏️ አባሉ ተዘምኗል\nስም: '+name+'\nስልክ: '+(m&&m.phone?m.phone:'—'));
+  } else {
+    // Add new
+    const member={id:Date.now().toString(),name,phone:document.getElementById('new-member-phone').value.trim(),tgId:document.getElementById('new-member-tgid').value.trim(),joinDate:new Date().toISOString().split('T')[0]};
+    db.members.push(member);
+    saveDB();closeModal('modal-add-member');
+    document.getElementById('new-member-name').value='';
+    document.getElementById('new-member-phone').value='';
+    document.getElementById('new-member-tgid').value='';
+    showToast('✅ '+name+' ተምዝጋቡ!');
+    sendTelegram('👤 አዲስ አባሉ ተምዝጋቡ!\nስም: '+name+'\nስልክ: '+(member.phone||'—'));
+  }
+}
+function deleteMember(id){
+  const idx=db.members.findIndex(m=>m.id===id);
+  if(idx<0)return;
+  const m=db.members[idx];
+  softDelete('member',m,idx,'አባሉ: '+m.name);
+  db.members.splice(idx,1);
+  saveDB();
+  showUndoBanner('👤 '+m.name+' ተሰርዟል');
+  sendTelegram('🗑️ አባሉ ተሰርዟል\nስም: '+m.name+'\nስልክ: '+(m.phone||'—'));
+}
+function getPaidRoundsForMember(memberId){return db.payments.filter(p=>p.memberId===memberId).length;}
+function getTotalPaidByMember(memberId){return db.payments.filter(p=>p.memberId===memberId).reduce((s,p)=>s+(p.amount||db.config.amount),0);}
+
+function renderMembers(){
+  const q=(document.getElementById('member-search').value||'').toLowerCase();
+  const list=document.getElementById('members-list');
+  const filtered=db.members.filter(m=>m.name.toLowerCase().includes(q));
+  if(!filtered.length){list.innerHTML=`<div class="empty-state"><span class="emoji">👥</span>አባሉ አልተምዘገበም<br><small>ወደ ላይ ✚ ተጫን</small></div>`;return;}
+  list.innerHTML=filtered.map(m=>{
+    const paid=getPaidRoundsForMember(m.id);
+    const total=db.config.totalRounds;
+    const pct=Math.round(paid/total*100);
+    const won=db.rounds.find(r=>r.winnerId===m.id);
+    const totalBirr=getTotalPaidByMember(m.id);
+    return `<div class="card" style="padding:12px;margin-bottom:8px;">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div class="avatar">${m.name[0]}</div>
+        <div class="member-info">
+          <div class="member-name">${m.name} ${won?'🏆':''}</div>
+          <div class="member-phone">${m.phone||'—'} · ${totalBirr.toLocaleString()} ብር</div>
+        </div>
+        <span class="member-status ${paid>0?'status-paid':'status-unpaid'}">${paid}/${total}</span>
+        <div class="action-btns">
+          <button class="btn btn-warn btn-sm" onclick="openEditMember('${m.id}')">✏️</button>
+          <button class="btn btn-danger btn-sm" onclick="deleteMember('${m.id}')">🗑</button>
+        </div>
+      </div>
+      <div style="margin-top:8px;"><div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div></div>
+    </div>`;
+  }).join('');
+}
+
+// ====== PAYMENTS ======
+function populatePaymentSelects(){
+  const ms=document.getElementById('pay-member-select');
+  const rs=document.getElementById('pay-round-select');
+  const vr=document.getElementById('view-round-select');
+  ms.innerHTML='<option value="">— አባሉ ምረጥ —</option>'+db.members.map(m=>`<option value="${m.id}">${m.name}</option>`).join('');
+  const rounds=Array.from({length:db.config.totalRounds},(_,i)=>i+1);
+  rs.innerHTML=rounds.map(r=>`<option value="${r}" ${r===db.currentRound?'selected':''}>${r}ኛ ዙር</option>`).join('');
+  vr.innerHTML=rounds.map(r=>`<option value="${r}" ${r===db.currentRound?'selected':''}>${r}ኛ ዙር</option>`).join('');
+  // Default amount
+  if(!document.getElementById('pay-amount').value)
+    document.getElementById('pay-amount').value=db.config.amount;
+  document.getElementById('pay-date').value=new Date().toISOString().split('T')[0];
+}
+
+function recordPayment(){
+  const memberId=document.getElementById('pay-member-select').value;
+  const round=parseInt(document.getElementById('pay-round-select').value);
+  const amount=parseInt(document.getElementById('pay-amount').value)||db.config.amount;
+  if(!memberId){showToast('አባሉን ምረጥ!');return;}
+  if(db.payments.find(p=>p.memberId===memberId&&p.round===round)){showToast('ይህ አባሉ ለዚህ ዙር ቀድሞ ከፍሏል!');return;}
+  const pay={id:Date.now().toString(),memberId,round,amount,date:document.getElementById('pay-date').value,note:document.getElementById('pay-note').value.trim()};
+  db.payments.push(pay);
+  const member=db.members.find(m=>m.id===memberId);
+  saveDB();
+  showToast(`✅ ${member.name} - ${round}ኛ ዙር ${amount.toLocaleString()} ብር ተመዘገበ!`);
+  sendTelegram(`💰 ክፍያ ተመዘገበ\nአባሉ: ${member.name}\nዙር: ${round}ኛ\nብር: ${amount.toLocaleString()}\nቀን: ${pay.date}`);
+  document.getElementById('pay-note').value='';
+  renderPaymentMatrix();
+}
+
+function openEditPayment(id){
+  const p=db.payments.find(x=>x.id===id);if(!p)return;
+  document.getElementById('edit-payment-id').value=id;
+  document.getElementById('edit-pay-amount').value=p.amount||db.config.amount;
+  document.getElementById('edit-pay-date').value=p.date;
+  document.getElementById('edit-pay-note').value=p.note||'';
+  openModal('modal-edit-payment');
+}
+function savePaymentEdit(){
+  const id=document.getElementById('edit-payment-id').value;
+  const p=db.payments.find(x=>x.id===id);if(!p)return;
+  p.amount=parseInt(document.getElementById('edit-pay-amount').value)||db.config.amount;
+  p.date=document.getElementById('edit-pay-date').value;
+  p.note=document.getElementById('edit-pay-note').value.trim();
+  saveDB();closeModal('modal-edit-payment');showToast('✅ ክፍያ ተዘምኗል!');renderPaymentMatrix();
+  const _ep=db.payments.find(x=>x.id===id);const _em=_ep?db.members.find(x=>x.id===_ep.memberId):null;
+  if(_ep&&_em)sendTelegram('✏️ ክፍያ ተዘምኗል\nአባሉ: '+_em.name+'\nዙር: '+_ep.round+'ኛ\nብር: '+(_ep.amount||db.config.amount).toLocaleString()+'\nቀን: '+_ep.date);
+}
+
+function deletePayment(id){
+  const idx=db.payments.findIndex(p=>p.id===id);if(idx<0)return;
+  const p=db.payments[idx];
+  const m=db.members.find(x=>x.id===p.memberId);
+  softDelete('payment',p,idx,'ክፍያ: '+(m?m.name:'—')+' '+p.round+'ኛ ዙር');
+  db.payments.splice(idx,1);
+  saveDB();
+  const _dm=db.members.find(x=>x.id===p.memberId);
+  sendTelegram('🗑️ ክፍያ ተሰርዟል\nአባሉ: '+(_dm?_dm.name:'—')+'\nዙር: '+p.round+'ኛ\nብር: '+(p.amount||db.config.amount).toLocaleString());
+  showUndoBanner('💰 ክፍያ ተሰርዟል');
+  renderPaymentMatrix();
+}
+
+function renderPaymentMatrix(){
+  const round=parseInt(document.getElementById('view-round-select').value||db.currentRound);
+  const tbody=document.getElementById('payment-matrix-body');
+  if(!db.members.length){tbody.innerHTML='<tr><td colspan="5" style="text-align:center;color:#999;">አባሉ የለም</td></tr>';return;}
+  tbody.innerHTML=db.members.map(m=>{
+    const pay=db.payments.find(p=>p.memberId===m.id&&p.round===round);
+    return `<tr>
+      <td>${m.name}</td>
+      <td>${pay?(pay.amount||db.config.amount).toLocaleString()+' ብር':'—'}</td>
+      <td><span class="member-status ${pay?'status-paid':'status-unpaid'}">${pay?'✅':'❌'}</span></td>
+      <td style="font-size:11px;">${pay?pay.date:'—'}</td>
+      <td>${pay?`<div style="display:flex;gap:3px;"><button class="btn btn-warn btn-sm" style="padding:4px 6px;" onclick="openEditPayment('${pay.id}')">✏️</button><button class="btn btn-danger btn-sm" style="padding:4px 6px;" onclick="deletePayment('${pay.id}')">🗑</button></div>`:'—'}</td>
+    </tr>`;
+  }).join('');
+}
+
+// ====== LOTTERY ======
+function drawLottery(){
+  const eligible=getEligibleForLottery();
+  if(!eligible.length){showToast('ሁሉም አባሉ ክፍያ ገና ከፍለው አልጨርሱም');return;}
+  if(db.rounds.find(r=>r.round===db.currentRound)){showToast('ለዚህ ዙር ደራሽ ቀድሞ ወጥቷል!');return;}
+  const winner=eligible[Math.floor(Math.random()*eligible.length)];
+  db.rounds.push({round:db.currentRound,winnerId:winner.id,date:new Date().toISOString().split('T')[0]});
+  saveDB();
+  showToast('🎉 '+winner.name+' አሸነፉ!');
+  sendTelegram('🎉🏆 ደራሽ ወጣ!\n'+db.currentRound+'ኛ ዙር ደራሽ: '+winner.name);
+  if(winner.tgId&&db.telegram.botToken)sendTelegramDirect(winner.tgId,'🎉 እንኳን ደስ አለዎት '+winner.name+'!\n'+db.currentRound+'ኛ ዙር ደርሷዎት!');
+  renderLottery();
+}
+function getEligibleForLottery(){
+  return db.members.filter(m=>{
+    const paidThisRound=db.payments.some(p=>p.memberId===m.id&&p.round===db.currentRound);
+    const notYetWon=!db.rounds.find(r=>r.winnerId===m.id);
+    return paidThisRound&&notYetWon;
+  });
+}
+function newRound(){
+  if(!db.rounds.find(r=>r.round===db.currentRound)&&db.members.length>0){if(!confirm('ለዚህ ዙር ደራሽ አልወጣም። አዲስ ዙር ይጀምሩ?'))return;}
+  if(db.currentRound>=db.config.totalRounds){showToast('ሁሉም ዙሮች ተጠናቀዋል!');return;}
+  db.currentRound++;saveDB();showToast('✅ '+db.currentRound+'ኛ ዙር ተጀመረ!');
+  sendTelegram('➡️ አዲስ ዙር ተጀምሮ\n'+db.currentRound+'ኛ ዙር ጀምሮ!');
+  renderLottery();
+}
+function renderLottery(){
+  document.getElementById('current-round-display').textContent=db.currentRound;
+  document.getElementById('current-round-chip').textContent='ዙር '+db.currentRound;
+  document.getElementById('lottery-eligible-count').textContent='ደራሽ ሊሆኑ: '+getEligibleForLottery().length;
+  const winner=db.rounds.find(r=>r.round===db.currentRound);
+  const badge=document.getElementById('current-winner-badge');
+  if(winner){const wm=db.members.find(m=>m.id===winner.winnerId);badge.innerHTML=wm?`<div class="winner-badge">🏆 ${wm.name}</div>`:''}
+  else badge.innerHTML='';
+  const histEl=document.getElementById('round-history-list');
+  if(!db.rounds.length){histEl.innerHTML='<div class="empty-state"><span class="emoji">📜</span>ታሪክ ገና የለም</div>';return;}
+  histEl.innerHTML=[...db.rounds].reverse().map(r=>{
+    const m=db.members.find(me=>me.id===r.winnerId);
+    return `<div class="member-item"><div class="avatar" style="background:linear-gradient(135deg,#f4a261,#e76f51);">${r.round}</div><div class="member-info"><div class="member-name">${m?m.name:'—'} 🏆</div><div class="member-phone">${r.round}ኛ ዙር · ${r.date}</div></div></div>`;
+  }).join('');
+}
+
+// ====== HISTORY / UNDO ======
+function softDelete(type,data,index,label){
+  db.deletedHistory.unshift({id:Date.now().toString(),type,data:JSON.parse(JSON.stringify(data)),index,label,deletedAt:new Date().toISOString()});
+  if(db.deletedHistory.length>50)db.deletedHistory=db.deletedHistory.slice(0,50);
+  pendingDelete={type,data:JSON.parse(JSON.stringify(data)),index};
+}
+function showUndoBanner(msg){
+  const b=document.getElementById('undo-banner');
+  document.getElementById('undo-msg').textContent=msg;
+  b.classList.add('show');
+  if(undoTimer)clearTimeout(undoTimer);
+  undoTimer=setTimeout(()=>{b.classList.remove('show');pendingDelete=null;},5000);
+}
+function undoDelete(){
+  if(!pendingDelete)return;
+  const{type,data,index}=pendingDelete;
+  if(type==='member'){db.members.splice(index,0,data);}
+  else if(type==='payment'){db.payments.splice(index,0,data);}
+  pendingDelete=null;
+  saveDB();
+  document.getElementById('undo-banner').classList.remove('show');
+  showToast('↩ ወደ ነበረበት ተመለሰ!');
+}
+function clearHistory(){if(!confirm('የሰርዝ ታሪኩን ሁሉ ይጽዳ?'))return;db.deletedHistory=[];saveDB();showToast('ታሪኩ ጸደ!');}
+function renderHistory(){
+  const el=document.getElementById('history-list');
+  if(!db.deletedHistory.length){el.innerHTML='<div class="empty-state"><span class="emoji">🗑️</span>ታሪክ የለም</div>';return;}
+  el.innerHTML=db.deletedHistory.map(h=>{
+    const d=new Date(h.deletedAt);
+    const dateStr=d.toLocaleDateString('am-ET')||d.toLocaleDateString();
+    const typeLabel=h.type==='member'?'👤 አባሉ':'💰 ክፍያ';
+    return `<div class="history-item">
+      <div style="flex:1;">
+        <div style="font-weight:700;font-size:13px;">${h.label}</div>
+        <div style="font-size:11px;color:#777;">${typeLabel} · ${dateStr}</div>
+      </div>
+      <span class="history-tag">ተሰርዟል</span>
+    </div>`;
+  }).join('');
+}
+
+// ====== REPORTS ======
+function renderReports(){
+  const totalBirr=db.payments.reduce((s,p)=>s+(p.amount||db.config.amount),0);
+  document.getElementById('rep-total-rounds').textContent=db.config.totalRounds;
+  document.getElementById('rep-total-money').textContent=totalBirr.toLocaleString()+' ብር';
+  const membEl=document.getElementById('member-report-list');
+  if(!db.members.length){membEl.innerHTML='<p style="color:#999;font-size:13px;">አባሉ የሉም</p>';}
+  else{membEl.innerHTML=db.members.map(m=>{
+    const paid=getPaidRoundsForMember(m.id);const pct=Math.round(paid/db.config.totalRounds*100);const birr=getTotalPaidByMember(m.id);
+    return `<div class="progress-bar-wrap"><div class="progress-label"><span>${m.name}</span><span>${birr.toLocaleString()} ብር (${pct}%)</span></div><div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div></div>`;
+  }).join('');}
+  const roundEl=document.getElementById('round-report-list');
+  roundEl.innerHTML=Array.from({length:db.config.totalRounds},(_,i)=>i+1).map(r=>{
+    const paidInRound=db.payments.filter(p=>p.round===r).length;
+    const total=db.members.length;const pct=total?Math.round(paidInRound/total*100):0;
+    const winner=db.rounds.find(ro=>ro.round===r);
+    const winMem=winner?db.members.find(m=>m.id===winner.winnerId):null;
+    return `<div class="progress-bar-wrap"><div class="progress-label"><span>${r}ኛ ዙር ${winMem?'· 🏆 '+winMem.name:''}</span><span>${paidInRound}/${total}</span></div><div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div></div>`;
+  }).join('');
+}
+function exportReport(){
+  const totalBirr=db.payments.reduce((s,p)=>s+(p.amount||db.config.amount),0);
+  let t=`📊 ${db.config.name} ሪፖርት\n========================\nአባሉ: ${db.members.length} | ዙሮች: ${db.config.totalRounds}\n\nአባሉ:\n`;
+  db.members.forEach(m=>{t+=`  • ${m.name}: ${getPaidRoundsForMember(m.id)}/${db.config.totalRounds} ክፍያ (${getTotalPaidByMember(m.id).toLocaleString()} ብር)\n`;});
+  t+=`\nዙሮች:\n`;
+  db.rounds.forEach(r=>{const m=db.members.find(me=>me.id===r.winnerId);t+=`  ${r.round}ኛ ዙር: ${m?m.name:'—'} (${r.date})\n`;});
+  t+=`\nጠቅላላ ብር: ${totalBirr.toLocaleString()} ብር`;
+  navigator.clipboard.writeText(t).then(()=>showToast('✅ ሪፖርት ተቀድቷል!'));
+}
+
+// ====== SETTINGS ======
+function loadSettings(){
+  document.getElementById('conf-name').value=db.config.name;
+  document.getElementById('conf-amount').value=db.config.amount;
+  document.getElementById('conf-rounds').value=db.config.totalRounds;
+  document.getElementById('conf-bot-token').value=db.telegram.botToken;
+  document.getElementById('conf-chat-id').value=db.telegram.chatId;
+}
+function saveConfig(){
+  db.config.name=document.getElementById('conf-name').value.trim()||'እቁብ';
+  db.config.amount=parseInt(document.getElementById('conf-amount').value)||500;
+  db.config.totalRounds=parseInt(document.getElementById('conf-rounds').value)||10;
+  saveDB();showToast('✅ ቅንጅቶች ተቀምጠዋል!');
+  sendTelegram('⚙️ ቅንጅቶች ተቀይረዋል\nየእቁብ ስም: '+db.config.name+'\nወርሃዊ ክፍያ: '+db.config.amount.toLocaleString()+' ብር\nዙሮች: '+db.config.totalRounds);
+}
+function saveTelegram(){
+  db.telegram.botToken=document.getElementById('conf-bot-token').value.trim();
+  db.telegram.chatId=document.getElementById('conf-chat-id').value.trim();
+  saveDB();showToast('✅ Telegram ቅንጅቶች ተቀምጠዋል!');
+}
+async function sendTelegram(message){
+  if(!db.telegram.botToken||!db.telegram.chatId)return;
+  try{await fetch(`https://api.telegram.org/bot${db.telegram.botToken}/sendMessage`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({chat_id:db.telegram.chatId,text:`📢 ${db.config.name}\n\n${message}`})});}catch(e){}
+}
+async function sendTelegramDirect(chatId,message){
+  if(!db.telegram.botToken)return;
+  try{await fetch(`https://api.telegram.org/bot${db.telegram.botToken}/sendMessage`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({chat_id:chatId,text:message})});}catch(e){}
+}
+async function testTelegram(){
+  if(!db.telegram.botToken||!db.telegram.chatId){showToast('Bot Token እና Chat ID ያስፈልጋሉ!');return;}
+  showToast('📤 ላካለሁ...');await sendTelegram('🧪 ሙከራ መልዕክት - Telegram ትክክለኛ ነው!');showToast('✅ ሙከራ ተላከ!');
+}
+async function exportToTelegram(){
+  if(!db.telegram.botToken||!db.telegram.chatId){showToast('❌ Bot Token እና Chat ID ያስፈልጋሉ!');return;}
+  const now=new Date();
+  const pad=n=>String(n).padStart(2,'0');
+  const dateStr=now.getFullYear()+pad(now.getMonth()+1)+pad(now.getDate());
+  const session=localStorage.getItem('iqub_session')||'unknown';
+  const filename=`iqub_backup_${session}_${dateStr}.json`;
+  const jsonStr=JSON.stringify(db,null,2);
+  const blob=new Blob([jsonStr],{type:'application/json'});
+  const formData=new FormData();
+  formData.append('chat_id',db.telegram.chatId);
+  formData.append('document',blob,filename);
+  const caption=`💾 እቁብ Backup
+📅 ${now.toLocaleString('am-ET')||now.toLocaleString()}
+👤 ${session}
+👥 አባላት: ${db.members.length}
+💰 ክፍያዎች: ${db.payments.length}
+🔄 ዙሮች: ${db.currentRound}`;
+  formData.append('caption',caption);
+  showToast('📤 እየላከ ነው...');
+  try{
+    const res=await fetch(`https://api.telegram.org/bot${db.telegram.botToken}/sendDocument`,{method:'POST',body:formData});
+    const data=await res.json();
+    if(data.ok){showToast('✅ Backup ተላከ!');}
+    else{showToast('❌ አልተላከም: '+data.description);}
+  }catch(e){showToast('❌ ኔት ስህተት!');}
+}
+
+function exportData(){exportToTelegram();}
+
+function importFromFile(event){
+  const file=event.target.files[0];
+  if(!file)return;
+  const reader=new FileReader();
+  reader.onload=function(e){
+    try{
+      const parsed=JSON.parse(e.target.result);
+      if(!parsed.members||!parsed.config){showToast('❌ ትክክለኛ Backup File አይደለም!');return;}
+      if(!confirm('ነባር ዳታ ተክቶ ይህን Backup ይጭናሉ?'))return;
+      db=parsed;
+      saveDB();
+      showToast('✅ Backup ተጭኗል! አባላት: '+db.members.length);
+      renderAll();
+    }catch(err){showToast('❌ File ልክ አይደለም!');}
+  };
+  reader.readAsText(file);
+  event.target.value='';
+}
+
+function importData(){document.querySelector('input[type=file][accept=".json"]').click();}
+function clearAllData(){if(!confirm('ሁሉንም ዳታ ይሰርዛሉ?'))return;localStorage.removeItem('iqub_db');location.reload();}
+
+// ====== DASHBOARD ======
+function updateDashboard(){
+  const members=db.members.length;
+  const paidThisRound=db.payments.filter(p=>p.round===db.currentRound).length;
+  const totalBirr=db.payments.reduce((s,p)=>s+(p.amount||db.config.amount),0);
+  document.getElementById('h-members').textContent=members;
+  document.getElementById('h-round').textContent=db.currentRound;
+  document.getElementById('h-collected').textContent=paidThisRound;
+  document.getElementById('stat-members').textContent=members;
+  document.getElementById('stat-round').textContent=db.currentRound;
+  document.getElementById('stat-total-collected').textContent=totalBirr.toLocaleString()+' ብር';
+  document.getElementById('stat-pending').textContent=members-paidThisRound;
+  const pct=members?Math.round(paidThisRound/members*100):0;
+  document.getElementById('progress-fill').style.width=pct+'%';
+  document.getElementById('progress-paid-label').textContent=paidThisRound+' ከፍለዋል';
+  document.getElementById('progress-pct').textContent=pct+'%';
+  const winner=db.rounds.find(r=>r.round===db.currentRound);
+  document.getElementById('round-winner-text').textContent=winner?(()=>{const m=db.members.find(me=>me.id===winner.winnerId);return m?'🏆 '+db.currentRound+'ኛ ዙር ደራሽ: '+m.name:'';})():'— ዙር ደራሽ: ገና አልወጣም —';
+  const recEl=document.getElementById('recent-payments-list');
+  const recent=[...db.payments].reverse().slice(0,5);
+  if(!recent.length){recEl.innerHTML='<div class="empty-state"><span class="emoji">💸</span>ክፍያ አልተመዘገበም</div>';return;}
+  recEl.innerHTML=recent.map(p=>{
+    const m=db.members.find(me=>me.id===p.memberId);
+    return `<div class="member-item"><div class="avatar" style="font-size:11px;">${p.round}ኛ</div><div class="member-info"><div class="member-name">${m?m.name:'—'}</div><div class="member-phone">${(p.amount||db.config.amount).toLocaleString()} ብር · ${p.date}</div></div><span class="member-status status-paid">✅</span></div>`;
+  }).join('');
+}
+
+function renderAll(){updateDashboard();renderMembers();populatePaymentSelects();renderPaymentMatrix();renderLottery();renderReports();renderHistory();loadSettings();}
+function updateAll(){renderAll();}
+
+// TOAST
+function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3000);}
+
+// INIT
+loadDB();renderAll();checkLogin();
+</script>
+</body>
+</html>
